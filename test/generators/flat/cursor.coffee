@@ -120,6 +120,23 @@ module.exports = (options, callback) ->
 
       Flat.each ((model, callback) -> model.save {name: ALBUM_NAME}, callback), runTest
 
+    it 'Cursor can select nested fields', (done) ->
+      ALBUM_NAME = 'Test3'
+      FIELD_NAMES = ['name.value', 'foo.bar.baz']
+
+      runTest = (err) ->
+        assert.ok(!err, "No errors: #{err}")
+
+        Flat.cursor({name: ALBUM_NAME}).select(FIELD_NAMES).toJSON (err, models_json) ->
+          assert.ok(!err, "No errors: #{err}")
+          assert.ok(_.isArray(models_json), 'cursor toJSON gives us models')
+          for json in models_json
+            assert.equal(_.size(json), FIELD_NAMES.length, 'gets only the requested values')
+            # TODO: more asserts
+          done()
+
+      Flat.each ((model, callback) -> model.save {name: ALBUM_NAME}, callback), runTest
+
     it 'Cursor can select values', (done) ->
       ALBUM_NAME = 'Test4'
       FIELD_NAMES = ['id', 'name']
